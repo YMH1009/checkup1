@@ -1,5 +1,3 @@
-<!DOCTYPE html>
-<html lang="zh-Hant">
 
 <head>
     <meta charset="UTF-8">
@@ -152,7 +150,7 @@
         </div>
 
         <div style="margin-top:20px;">
-            <button class="btn" onclick="toggleAddons()">加做項目 / 簽名 / 長截圖</button>
+            <button class="btn" onclick="toggleAddons()">加做項目</button>
         </div>
 
         <div id="addons" class="hidden">
@@ -462,4 +460,3 @@
 
 </body>
 
-</html>
