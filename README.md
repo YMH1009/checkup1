@@ -293,8 +293,7 @@
             document.getElementById("addons").classList.toggle("hidden");
         }
 
-        function togglePackage(pkg) {
-            let btn = document.getElementById("pkg" + pkg);
+        function getPackagePrice(pkg) {
             const packagePrice = {
                 A: 3000,
                 B: 2200,
@@ -303,6 +302,11 @@
                 E: 2000,
                 F: 2000
             };
+            return packagePrice[pkg];
+        }
+
+        function togglePackage(pkg) {
+            let btn = document.getElementById("pkg" + pkg);
             if (pkg === "D") {
                 document.getElementById("pkgE").classList.remove("selected");
                 packageTotals["E"] = 0;
@@ -314,7 +318,7 @@
                 localStorage.removeItem("pkgD");
             }
             btn.classList.toggle("selected");
-            packageTotals[pkg] = btn.classList.contains("selected") ? packagePrice[pkg] : 0;
+            packageTotals[pkg] = btn.classList.contains("selected") ? getPackagePrice(pkg) : 0;
             if (btn.classList.contains("selected")) localStorage.setItem("pkg" + pkg, "selected");
             else localStorage.removeItem("pkg" + pkg);
             document.querySelectorAll("#items" + pkg + " .pkg-item").forEach(innerBtn => {
@@ -324,7 +328,6 @@
             updateTotal();
         }
 
-        // 內部按鈕
         document.querySelectorAll(".pkg-item").forEach(btn => {
             btn.addEventListener("click", function () {
                 let pkg = btn.dataset.pkg;
@@ -342,9 +345,8 @@
             for (let k in packageTotals) sum += packageTotals[k];
             document.querySelectorAll(".pkg-item.selected").forEach(btn => {
                 let pkg = btn.dataset.pkg;
-                if (!document.getElementById("pkg" + pkg).classList.contains("selected")) {
-                    sum += parseInt(btn.dataset.price);
-                }
+                if (!document.getElementById("pkg" + pkg).classList.contains("selected")) sum += parseInt(btn.dataset
+                    .price);
             });
             document.getElementById("total").textContent = "總金額: " + sum + " 元";
         }
@@ -379,8 +381,8 @@
                 box.appendChild(btn);
             });
             ["A", "B", "C", "D", "E", "F"].forEach(pkg => {
-                if (document.getElementById("pkg" + pkg).classList.contains("selected")) {
-                    document.querySelectorAll("#items" + pkg + " .pkg-item").forEach(innerBtn => {
+                document.querySelectorAll("#items" + pkg + " .pkg-item").forEach(innerBtn => {
+                    if (innerBtn.classList.contains("selected")) {
                         let btn = document.createElement("button");
                         btn.className = "btn";
                         btn.textContent = innerBtn.textContent;
@@ -389,19 +391,8 @@
                             markDone(btn);
                         }
                         box.appendChild(btn);
-                    });
-                } else {
-                    document.querySelectorAll("#items" + pkg + " .pkg-item.selected").forEach(innerBtn => {
-                        let btn = document.createElement("button");
-                        btn.className = "btn";
-                        btn.textContent = innerBtn.textContent;
-                        btn.id = pkg + "-" + innerBtn.textContent;
-                        btn.onclick = function () {
-                            markDone(btn);
-                        }
-                        box.appendChild(btn);
-                    });
-                }
+                    }
+                });
             });
             document.querySelectorAll("#selectedOptions button").forEach(btn => {
                 if (localStorage.getItem(btn.id) === "done") {
@@ -435,36 +426,38 @@
             } else alert("輸入錯誤，請重新操作！");
         }
 
+        // 初始化頁面
         window.onload = function () {
             selected = [];
-            for (let i = 1; i <= 8; i++) {
-                let btn = document.getElementById("opt" + i);
-                if (localStorage.getItem(btn.id) === "selected" && selected.length < 2) {
+            document.querySelectorAll("#options .btn").forEach(btn => {
+                if (localStorage.getItem(btn.id) === "selected") {
                     btn.classList.add("selected");
                     selected.push(btn.textContent);
-                } else {
-                    btn.classList.remove("selected");
-                    localStorage.removeItem(btn.id);
                 }
-            }
+            });
             ["A", "B", "C", "D", "E", "F"].forEach(pkg => {
-                if (localStorage.getItem("pkg" + pkg) === "selected") togglePackage(pkg);
+                const pkgBtn = document.getElementById("pkg" + pkg);
+                if (localStorage.getItem("pkg" + pkg) === "selected") {
+                    pkgBtn.classList.add("selected");
+                    packageTotals[pkg] = getPackagePrice(pkg);
+                    document.querySelectorAll("#items" + pkg + " .pkg-item").forEach(innerBtn => innerBtn.classList
+                        .add("selected"));
+                }
             });
             document.querySelectorAll(".pkg-item").forEach(btn => {
                 if (localStorage.getItem(btn.id) === "selected") btn.classList.add("selected");
             });
-            document.querySelectorAll(".station .btn").forEach(btn => {
-                if (localStorage.getItem(btn.id) === "done") {
-                    btn.classList.add("done");
-                    if (!btn.textContent.includes("✅")) btn.textContent += " ✅";
-                }
+            document.querySelectorAll("#page2 .btn").forEach(btn => {
+                if (localStorage.getItem(btn.id) === "done") btn.classList.add("done");
             });
-            renderSelectedOptions();
-            const currentPage = localStorage.getItem("currentPage") || "page1";
-            document.getElementById("page1").classList.toggle("hidden", currentPage === "page2");
-            document.getElementById("page2").classList.toggle("hidden", currentPage === "page1");
+            const currentPage = localStorage.getItem("currentPage");
+            if (currentPage === "page2") {
+                document.getElementById("page1").classList.add("hidden");
+                document.getElementById("page2").classList.remove("hidden");
+                renderSelectedOptions();
+            }
             updateTotal();
-        };
+        }
     </script>
 
 </body>
